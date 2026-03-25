@@ -347,7 +347,7 @@
       "targets": [
         {
           "datasource": "Loki",
-          "expr": "{container=\"ubuntu-web-1\"}",
+          "expr": "{job=\"docker\"}",
           "legendFormat": ""
         }
       ],
