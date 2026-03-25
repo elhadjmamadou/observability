@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: "freejobgn"
+    env: "development"
+
+scrape_configs:
+  # Django tourne en dehors de Docker en dev (python manage.py runserver)
+  - job_name: "freejobgn-django"
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

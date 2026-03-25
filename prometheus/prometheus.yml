@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: "freejobgn"
+    env: "production"
+
+scrape_configs:
+  # Django API
+  - job_name: "freejobgn-django"
+    static_configs:
+      - targets: ["web:8000"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+
+  # Prometheus lui-même
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
