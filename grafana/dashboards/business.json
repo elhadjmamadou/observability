@@ -1,0 +1,298 @@
+{
+  "uid": "freejobgn-business",
+  "title": "FreeJobGN — Business KPIs",
+  "tags": ["freejobgn", "business", "kpi"],
+  "timezone": "browser",
+  "refresh": "5m",
+  "schemaVersion": 38,
+  "time": { "from": "now-30d", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Revenus cumulés (GNF)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_payment_revenue_gnf_total",
+          "legendFormat": "Total GNF"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "fixed", "fixedColor": "green" }
+        }
+      },
+      "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 2,
+      "title": "Total utilisateurs",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(freejobgn_users_total)",
+          "legendFormat": "Utilisateurs"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        }
+      },
+      "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 3,
+      "title": "Abonnements actifs",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_subscriptions_total{status=\"active\"}",
+          "legendFormat": "Actifs"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "fixed", "fixedColor": "purple" }
+        }
+      },
+      "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 4,
+      "title": "Taux conversion projet → contrat",
+      "type": "stat",
+      "description": "Ratio contrats / projets totaux",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "100 * sum(freejobgn_contracts_total) / (sum(freejobgn_projects_total) > 0)",
+          "legendFormat": "% conversion"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 20 },
+              { "color": "green", "value": 40 }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 5,
+      "title": "Croissance utilisateurs — 30 jours",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(freejobgn_users_total)",
+          "legendFormat": "Total utilisateurs"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_users_total{role=\"CLIENT\"}",
+          "legendFormat": "Clients"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_users_total{role=\"PROVIDER\"}",
+          "legendFormat": "Prestataires"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2 }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Évolution abonnements par tier",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_active_subscriptions_by_tier",
+          "legendFormat": "{{tier}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2 }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Paiements par statut",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_payment_transactions_total",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2 }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Évolution revenus GNF",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_payment_revenue_gnf_total",
+          "legendFormat": "Revenus cumulés (GNF)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 15 }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Projets par statut",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 20 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_projects_total",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Contrats par statut",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 20 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_contracts_total",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Abonnements par statut",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 20 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_subscriptions_total",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Utilisateurs par rôle",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 20 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_users_total",
+          "legendFormat": "{{role}}"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Tâches Celery par statut",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_celery_tasks_total",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      },
+      "options": { "orientation": "horizontal" }
+    },
+    {
+      "id": 14,
+      "title": "Tâches Celery en échec par nom",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "freejobgn_celery_task_failures_by_name > 0",
+          "legendFormat": "{{task_name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "options": { "orientation": "horizontal" }
+    },
+    {
+      "id": 15,
+      "title": "Recherche de logs — Loki",
+      "type": "logs",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 36 },
+      "targets": [
+        {
+          "datasource": "Loki",
+          "expr": "{service=\"web\"} |= `` | line_format \"{{.stream}} {{.output}}\"",
+          "legendFormat": ""
+        }
+      ],
+      "options": {
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      }
+    }
+  ]
+}

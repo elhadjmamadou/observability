@@ -1,0 +1,34 @@
+apiVersion: 1
+
+contactPoints:
+  # ── Email ───────────────────────────────────────────────────────────────
+  - orgId: 1
+    name: email-alerts
+    receivers:
+      - uid: email-alerts-uid
+        type: email
+        settings:
+          addresses: "${ALERT_EMAIL_TO}"
+          subject: "[FreeJobGN] {{ .CommonLabels.alertname }} — {{ .CommonLabels.severity | toUpper }}"
+          singleEmail: false
+        disableResolveMessage: false
+
+  # ── Telegram ────────────────────────────────────────────────────────────
+  - orgId: 1
+    name: telegram-alerts
+    receivers:
+      - uid: telegram-alerts-uid
+        type: telegram
+        settings:
+          bottoken: "${TELEGRAM_BOT_TOKEN}"
+          chatid: "${TELEGRAM_CHAT_ID}"
+          message: |
+            🚨 *{{ .CommonLabels.alertname }}*
+            Sévérité : {{ .CommonLabels.severity | toUpper }}
+
+            {{ range .Alerts }}
+            📌 {{ .Annotations.summary }}
+            {{ .Annotations.description }}
+            {{ end }}
+          parse_mode: Markdown
+        disableResolveMessage: false

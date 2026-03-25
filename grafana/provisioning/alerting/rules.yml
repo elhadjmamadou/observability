@@ -1,0 +1,207 @@
+apiVersion: 1
+
+groups:
+  # ── Critiques ───────────────────────────────────────────────────────────
+  - orgId: 1
+    name: FreeJobGN — Critiques
+    folder: FreeJobGN Alerts
+    interval: 1m
+    rules:
+      - uid: fjgn-api-down
+        title: "API Django inaccessible"
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 300, to: 0 }
+            model:
+              editorMode: code
+              expr: "up{job=\"freejobgn-django\"}"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: "__expr__"
+            model:
+              type: classic_conditions
+              refId: C
+              conditions:
+                - evaluator: { params: [1], type: lt }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last }
+                  type: query
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "API Django inaccessible"
+          description: "Prometheus ne peut plus scraper /metrics depuis 2 minutes."
+
+      - uid: fjgn-5xx-rate
+        title: "Taux d'erreur 5xx > 1%"
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              editorMode: code
+              expr: >
+                100 * sum(rate(django_http_responses_total_by_status_total{status=~"5.."}[5m]))
+                / sum(rate(django_http_responses_total_by_status_total[5m]))
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: "__expr__"
+            model:
+              type: classic_conditions
+              refId: C
+              conditions:
+                - evaluator: { params: [1], type: gt }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last }
+                  type: query
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "Taux d'erreur 5xx > 1%"
+          description: "Les erreurs 5xx dépassent 1% des requêtes depuis 5 minutes."
+
+      - uid: fjgn-payment-failures
+        title: "Pic d'échecs de paiement (> 3 en 10 min)"
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              editorMode: code
+              expr: "increase(freejobgn_payment_transactions_total{status=\"FAILED\"}[10m])"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: "__expr__"
+            model:
+              type: classic_conditions
+              refId: C
+              conditions:
+                - evaluator: { params: [3], type: gt }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last }
+                  type: query
+        noDataState: NoData
+        execErrState: Error
+        for: 0s
+        labels: { severity: critical }
+        annotations:
+          summary: "Pic d'échecs de paiement Djomy"
+          description: "Plus de 3 paiements ont échoué en 10 minutes."
+
+  # ── Avertissements ──────────────────────────────────────────────────────
+  - orgId: 1
+    name: FreeJobGN — Avertissements
+    folder: FreeJobGN Alerts
+    interval: 1m
+    rules:
+      - uid: fjgn-webhook-sig
+        title: "Webhooks Djomy signature invalide"
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 300, to: 0 }
+            model:
+              editorMode: code
+              expr: "freejobgn_webhooks_total{state=\"invalid_signature\"}"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: "__expr__"
+            model:
+              type: classic_conditions
+              refId: C
+              conditions:
+                - evaluator: { params: [0], type: gt }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last }
+                  type: query
+        noDataState: NoData
+        execErrState: Error
+        for: 0s
+        labels: { severity: warning }
+        annotations:
+          summary: "Webhooks Djomy avec signature invalide"
+          description: "Des webhooks ont été reçus avec une signature invalide. Vérifier DJOMY_WEBHOOK_SECRET."
+
+      - uid: fjgn-disk-low
+        title: "Espace disque < 20%"
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 300, to: 0 }
+            model:
+              editorMode: code
+              expr: >
+                (node_filesystem_avail_bytes{mountpoint="/", fstype!="tmpfs"}
+                / node_filesystem_size_bytes{mountpoint="/", fstype!="tmpfs"}) * 100
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: "__expr__"
+            model:
+              type: classic_conditions
+              refId: C
+              conditions:
+                - evaluator: { params: [20], type: lt }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last }
+                  type: query
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Espace disque < 20%"
+          description: "Moins de 20% d'espace disque disponible. Nettoyer avec docker system prune."
+
+      - uid: fjgn-high-latency
+        title: "Latence P95 > 1s"
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              editorMode: code
+              expr: >
+                histogram_quantile(0.95,
+                  sum by (le) (rate(django_http_requests_latency_seconds_by_view_method_total_bucket[5m]))
+                )
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: "__expr__"
+            model:
+              type: classic_conditions
+              refId: C
+              conditions:
+                - evaluator: { params: [1.0], type: gt }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last }
+                  type: query
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Latence P95 dépasse 1 seconde"
+          description: "Le 95ème percentile de latence est au-dessus de 1s depuis 5 minutes."

@@ -1,0 +1,48 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Découverte automatique des conteneurs Docker via docker.sock
+  - job_name: docker-containers
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 10s
+        filters:
+          - name: status
+            values: ["running"]
+    relabel_configs:
+      # Nom du conteneur → label "container"
+      - source_labels: [__meta_docker_container_name]
+        regex: "/(.*)"
+        target_label: container
+      # Image → label "image"
+      - source_labels: [__meta_docker_container_image]
+        target_label: image
+      # Compose service name → label "service"
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: service
+      # Compose project → label "compose_project"
+      - source_labels: [__meta_docker_container_label_com_docker_compose_project]
+        target_label: compose_project
+
+    pipeline_stages:
+      # Parsing du format de log Docker JSON
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            timestamp: time
+      - labels:
+          stream:
+      - output:
+          source: output
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
