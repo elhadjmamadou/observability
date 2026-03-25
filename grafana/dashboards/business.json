@@ -283,7 +283,7 @@
       "targets": [
         {
           "datasource": "Loki",
-          "expr": "{service=\"web\"} |= `` | line_format \"{{.stream}} {{.output}}\"",
+          "expr": "{container=\"ubuntu-web-1\"}",
           "legendFormat": ""
         }
       ],

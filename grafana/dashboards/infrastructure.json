@@ -347,7 +347,7 @@
       "targets": [
         {
           "datasource": "Loki",
-          "expr": "{service=\"web\"} |= \"ERROR\" | line_format \"{{.output}}\"",
+          "expr": "{container=\"ubuntu-web-1\"}",
           "legendFormat": ""
         }
       ],
